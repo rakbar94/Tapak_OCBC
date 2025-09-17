@@ -1,0 +1,125 @@
+//model
+
+package com.rizki.test.model;
+
+public class Product_tapak_ocbc {
+    private String sku;
+    private String productName;
+    private int quantityInStock;
+    private double price;
+    private String category;
+
+    // Getters dan setters
+    public String getSku() { return sku; }
+    public void setSku(String sku) { this.sku = sku; }
+
+    public String getProductName() { return productName; }
+    public void setProductName(String productName) { this.productName = productName; }
+
+    public int getQuantityInStock() { return quantityInStock; }
+    public void setQuantityInStock(int quantityInStock) { this.quantityInStock = quantityInStock; }
+
+    public double getPrice() { return price; }
+    public void setPrice(double price) { this.price = price; }
+
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
+}
+
+//validator
+
+package com.rizki.test.validator;
+
+import com.rizki.test.model.Product_tapak_ocbc;
+import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
+
+import java.util.Arrays;
+import java.util.List;
+
+@Component
+public class ProductValidator_tapak_ocbc implements Validator {
+
+    private static final List<String> ALLOWED_CATEGORIES =
+            Arrays.asList("Electronics", "Books", "Apparel", "Home Goods");
+
+    @Override
+    public boolean supports(Class<?> clazz) {
+        return Product_tapak_ocbc.class.equals(clazz);
+    }
+
+    @Override
+    public void validate(Object target, Errors errors) {
+        Product_tapak_ocbc product = (Product_tapak_ocbc) target;
+
+        // 1. sku
+        if (product.getSku() == null || product.getSku().trim().isEmpty()) {
+            errors.rejectValue("sku", "sku.empty", "The sku is a mandatory field");
+        } else if (!product.getSku().matches("^SKU-\\d{8}$")) {
+            errors.rejectValue("sku", "sku.format", "The sku must be in the format SKU-XXXXXXXX");
+        }
+
+        // 2. productName
+        if (product.getProductName() == null || product.getProductName().trim().isEmpty()) {
+            errors.rejectValue("productName", "productName.empty", "The productName is a mandatory field");
+        }
+
+        // 3. quantityInStock
+        if (product.getQuantityInStock() < 0) {
+            errors.rejectValue("quantityInStock", "quantityInStock.negative", "The quantityInStock cannot be negative");
+        }
+
+        // 4. price
+        if (product.getPrice() <= 0) {
+            errors.rejectValue("price", "price.invalid", "The price must be greater than zero");
+        }
+
+        // 5. category
+        if (product.getCategory() == null || product.getCategory().trim().isEmpty()) {
+            errors.rejectValue("category", "category.empty", "The category is a mandatory field");
+        } else if (!ALLOWED_CATEGORIES.contains(product.getCategory())) {
+            errors.rejectValue("category", "category.invalid", "Invalid product category");
+        }
+    }
+}
+
+
+//controller 
+
+package com.rizki.test.controller;
+
+import com.rizki.test.model.Product_tapak_ocbc;
+import com.rizki.test.validator.ProductValidator_tapak_ocbc;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/products")
+public class ProductController_tapak_ocbc {
+
+    @Autowired
+    private ProductValidator_tapak_ocbc productValidator;
+
+    @PostMapping
+    public ResponseEntity<?> addProduct(@RequestBody Product_tapak_ocbc product) {
+        Errors errors = new BeanPropertyBindingResult(product, "product");
+        productValidator.validate(product, errors);
+
+        if (errors.hasErrors()) {
+            List<String> messages = errors.getAllErrors()
+                    .stream()
+                    .map(e -> e.getDefaultMessage())
+                    .collect(Collectors.toList());
+            return ResponseEntity.badRequest().body(messages);
+        }
+
+        return ResponseEntity.ok("Product accepted");
+    }
+}
