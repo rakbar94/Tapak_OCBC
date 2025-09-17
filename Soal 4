@@ -1,0 +1,101 @@
+import java.util.*;
+
+public class Solution {
+
+    static class Edge {
+        int u, v, w;
+        Edge(int u, int v, int w) {
+            this.u = u;
+            this.v = v;
+            this.w = w;
+        }
+    }
+
+    static class DSU {
+        int[] parent, rank;
+
+        DSU(int n) {
+            parent = new int[n + 1];
+            rank = new int[n + 1];
+            for (int i = 0; i <= n; i++) {
+                parent[i] = i;
+                rank[i] = 0;
+            }
+        }
+
+        int find(int x) {
+            if (parent[x] != x) {
+                parent[x] = find(parent[x]);
+            }
+            return parent[x];
+        }
+
+        boolean union(int x, int y) {
+            int rx = find(x), ry = find(y);
+            if (rx == ry) return false;
+            if (rank[rx] < rank[ry]) {
+                parent[rx] = ry;
+            } else if (rank[rx] > rank[ry]) {
+                parent[ry] = rx;
+            } else {
+                parent[ry] = rx;
+                rank[rx]++;
+            }
+            return true;
+        }
+    }
+
+    public static int getMinimumCostMST(
+            int graph_nodes,
+            int[] graph_from,
+            int[] graph_to,
+            int[] graph_weight,
+            int source,
+            int destination) {
+
+        // Step 1: Create edge list
+        List<Edge> edges = new ArrayList<>();
+        for (int i = 0; i < graph_from.length; i++) {
+            edges.add(new Edge(graph_from[i], graph_to[i], graph_weight[i]));
+        }
+
+        // Step 2: Sort edges by weight
+        edges.sort(Comparator.comparingInt(e -> e.w));
+
+        // Step 3: Build MST using Kruskal
+        DSU dsu = new DSU(graph_nodes);
+        int mstCost = 0;
+        List<Edge> mstEdges = new ArrayList<>();
+
+        for (Edge e : edges) {
+            if (dsu.union(e.u, e.v)) {
+                mstCost += e.w;
+                mstEdges.add(e);
+            }
+        }
+
+        // Step 4: Check if source and destination are connected in MST
+        DSU mstDsu = new DSU(graph_nodes);
+        for (Edge e : mstEdges) {
+            mstDsu.union(e.u, e.v);
+        }
+
+        if (mstDsu.find(source) != mstDsu.find(destination)) {
+            return -1; // Not connected
+        }
+
+        return mstCost;
+    }
+
+    // For custom testing
+    public static void main(String[] args) {
+        int graph_nodes = 3;
+        int[] graph_from = {1, 2, 1};
+        int[] graph_to = {2, 3, 3};
+        int[] graph_weight = {5, 3, 4};
+        int source = 1, destination = 3;
+
+        int result = getMinimumCostMST(graph_nodes, graph_from, graph_to, graph_weight, source, destination);
+        System.out.println(result);  // Expected: 7
+    }
+}
