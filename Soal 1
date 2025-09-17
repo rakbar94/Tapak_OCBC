@@ -1,0 +1,80 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+public class tapak_ocbc {
+
+    public static int getTotalGoals(String team, int year) {
+        String baseUrl = "https://jsonmock.hackerrank.com/api/football_matches";
+        int totalGoals = 0;
+
+        try {
+            // --- Case 1: team as team ke 1---
+            int page = 1;
+            while (true) {
+                String url = String.format("%s?year=%d&team1=%s&page=%d", baseUrl, year, team, page);
+                JSONObject response = getResponse(url);
+
+                JSONArray data = response.getJSONArray("data");
+                for (int i = 0; i < data.length(); i++) {
+                    JSONObject match = data.getJSONObject(i);
+                    totalGoals += Integer.parseInt(match.getString("team1goals"));
+                }
+
+                if (page >= response.getInt("total_pages")) break;
+                page++;
+            }
+
+            // --- Case 2: team as team ke 2 ---
+            page = 1;
+            while (true) {
+                String url = String.format("%s?year=%d&team2=%s&page=%d", baseUrl, year, team, page);
+                JSONObject response = getResponse(url);
+
+                JSONArray data = response.getJSONArray("data");
+                for (int i = 0; i < data.length(); i++) {
+                    JSONObject match = data.getJSONObject(i);
+                    totalGoals += Integer.parseInt(match.getString("team2goals"));
+                }
+
+                if (page >= response.getInt("total_pages")) break;
+                page++;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return totalGoals;
+    }
+
+    private static JSONObject getResponse(String urlStr) throws Exception {
+        URL url = new URL(urlStr);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        String inputLine;
+        StringBuilder content = new StringBuilder();
+
+        while ((inputLine = in.readLine()) != null) {
+            content.append(inputLine);
+        }
+        in.close();
+        conn.disconnect();
+
+        return new JSONObject(content.toString());
+    }
+
+    // Untuk HackerRank custom testing
+    public static void main(String[] args) throws Exception {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        String team = br.readLine().trim();
+        int year = Integer.parseInt(br.readLine().trim());
+
+        System.out.println(getTotalGoals(team, year));
+    }
+}
