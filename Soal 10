@@ -1,0 +1,10 @@
+SELECT 
+    a.iban,
+    a.amount,
+    COUNT(t.id) AS transaction_count
+FROM accounts a
+LEFT JOIN transactions t 
+       ON a.iban = t.iban
+WHERE a.amount < 0
+GROUP BY a.iban, a.amount
+ORDER BY a.amount ASC;
