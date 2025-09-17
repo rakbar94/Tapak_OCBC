@@ -1,0 +1,130 @@
+// Abstract class Vehicle
+abstract class Vehicle {
+    private String licensePlate;
+    private int maxSpeed;
+
+    // Constructor
+    public Vehicle(String licensePlate) {
+        this.licensePlate = licensePlate;
+    }
+
+    // Abstract methods
+    public abstract void setMaxSpeed(int speed);
+    public abstract int getMaxSpeed();
+    public abstract double calculateFuelConsumption(int distance);
+
+    // Concrete method
+    public void displayInfo() {
+        System.out.println("License Plate: " + licensePlate + ", Max Speed: " + maxSpeed + " km/h");
+    }
+
+    // Protected setter for licensePlate if needed
+    protected String getLicensePlate() {
+        return licensePlate;
+    }
+
+    // Protected setter for maxSpeed (only subclasses can set)
+    protected void setInternalMaxSpeed(int speed) {
+        this.maxSpeed = speed;
+    }
+
+    // Protected getter for maxSpeed (used in displayInfo)
+    protected int getInternalMaxSpeed() {
+        return this.maxSpeed;
+    }
+}
+
+// Car class
+class Car extends Vehicle {
+    private int fuelEfficiency; // kilometers per liter
+
+    public Car(String licensePlate, int fuelEfficiency) {
+        super(licensePlate);
+        this.fuelEfficiency = fuelEfficiency;
+    }
+
+    @Override
+    public void setMaxSpeed(int speed) {
+        super.setInternalMaxSpeed(speed);
+    }
+
+    @Override
+    public int getMaxSpeed() {
+        return super.getInternalMaxSpeed();
+    }
+
+    @Override
+    public double calculateFuelConsumption(int distance) {
+        if (fuelEfficiency <= 0) return Double.POSITIVE_INFINITY; // avoid division by zero
+        return (double) distance / fuelEfficiency;
+    }
+
+    // Getter & Setter
+    public int getFuelEfficiency() {
+        return fuelEfficiency;
+    }
+
+    public void setFuelEfficiency(int fuelEfficiency) {
+        this.fuelEfficiency = fuelEfficiency;
+    }
+}
+
+// Truck class
+class Truck extends Vehicle {
+    private int fuelEfficiency; // kilometers per liter
+    private int cargoWeight;    // kilograms
+
+    public Truck(String licensePlate, int fuelEfficiency, int cargoWeight) {
+        super(licensePlate);
+        this.fuelEfficiency = fuelEfficiency;
+        this.cargoWeight = cargoWeight;
+    }
+
+    @Override
+    public void setMaxSpeed(int speed) {
+        super.setInternalMaxSpeed(speed);
+    }
+
+    @Override
+    public int getMaxSpeed() {
+        return super.getInternalMaxSpeed();
+    }
+
+    @Override
+    public double calculateFuelConsumption(int distance) {
+        if (fuelEfficiency <= 0) return Double.POSITIVE_INFINITY;
+        return (double) distance / fuelEfficiency + (cargoWeight * 0.05);
+    }
+
+    // Getters & Setters
+    public int getFuelEfficiency() {
+        return fuelEfficiency;
+    }
+
+    public void setFuelEfficiency(int fuelEfficiency) {
+        this.fuelEfficiency = fuelEfficiency;
+    }
+
+    public int getCargoWeight() {
+        return cargoWeight;
+    }
+
+    public void setCargoWeight(int cargoWeight) {
+        this.cargoWeight = cargoWeight;
+    }
+}
+
+// test class
+public class tapak_ocbc {
+    public static void main(String[] args) {
+        Car car = new Car("B 1234 XY", 15); // 15 km/l
+        car.setMaxSpeed(180);
+        car.displayInfo();
+        System.out.println("Car Fuel Consumption (100 km): " + car.calculateFuelConsumption(100) + " liters\n");
+
+        Truck truck = new Truck("D 9876 ZZ", 8, 500); // 8 km/l, 500kg cargo
+        truck.setMaxSpeed(120);
+        truck.displayInfo();
+        System.out.println("Truck Fuel Consumption (100 km): " + truck.calculateFuelConsumption(100) + " liters");
+    }
+}
