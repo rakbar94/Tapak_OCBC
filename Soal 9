@@ -1,0 +1,38 @@
+public class tapak_ocbc {
+
+    public static int minYearsToSurpass(double aliceInitial, double bobBonus,
+                                        double aliceRate, double bobRate) {
+        // Jika Bob tidak mungkin menyusul
+        if (bobRate <= aliceRate && bobBonus <= aliceInitial) {
+            return -1;
+        }
+
+        double alice = aliceInitial;
+        double bob = bobBonus;
+
+        int years = 0;
+
+        while (years <= 1_000_000) { // batas keamanan
+            years++;
+            alice *= (1 + aliceRate);
+            bob *= (1 + bobRate);
+
+            if (bob > alice) {
+                return years;
+            }
+        }
+
+        return -1; // belum pernah terkejar dalam batas wajar
+    }
+
+    // Demo
+    public static void main(String[] args) {
+        double aliceInitial = 1000;
+        double bobBonus = 800;
+        double aliceRate = 0.05;
+        double bobRate = 0.08;
+
+        System.out.println(minYearsToSurpass(aliceInitial, bobBonus, aliceRate, bobRate));
+        // Output: jumlah tahun saat Bob melewati Alice
+    }
+}
